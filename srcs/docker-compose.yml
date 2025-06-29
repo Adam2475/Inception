@@ -1,59 +1,87 @@
-version: '3.9'
+# version: "3.9" obsolete
 
+# docker compose up --build
+# docker image ls
+
+# run ngnix on the port 80, it will be visible at localhost
 services:
-  mariadb:
-    build: ./requirements/mariadb
-    container_name: mariadb
-    env_file: .env
-    volumes:
-      - mariadb_data:/var/lib/mysql
-    networks:
-      - inception
-    restart: always
-  
-  wordpress:
-    build: ./requirements/wordpress
-    container_name: wordpress
-    env_file: .env
-    depends_on:
-      - mariadb
-    volumes:
-      - wordpress_data:/var/www/html
-    networks:
-      - inception
-    restart: always
-
   nginx:
-    build: ./requirements/nginx
+    build: requirements/nginx/.
     container_name: nginx
-    env_file: .env
-    depends_on:
-      - wordpress
     ports:
-      - "443:443"
+      - "80:80"
+    # we can use volumes to share the content of default web server
+    # location directory to our local computer
     volumes:
-      - wordpress_data:/var/www/html
-    networks:
-      - inception
-    restart: always
+      - ../web:/var/www/html
+  wp-php:
+    build: requirements/wordpress/.
+    container_name: wp-php
+    # mount the wordpress container to our machine "web" folder
+    # this directory is where nginx hosts our website
 
-volumes:
-  mariadb_data:
-    name: mariadb_data
-    driver: local
-    driver_opt:
-      type: none
-      o: bind
-      device: /home/adam/Desktop/Inception/mariadb
+    # because we are installing wp to the container that runs php we
+    # need to have access to the hosting service (nginx) to access pages
+    # this is why the folder is shared between both services
+    volumes:
+      - ../web:/var/www/html
 
-  wordpress_data:
-    name: wordpress_data
-    driver: local
-    driver_opt:
-      type: none
-      o: bind
-      device: /home/adam/Desktop/Inception/wordpress
+# version: '3.9'
 
-networks:
-  inception:
-    driver: bridge
+# services:
+#   mariadb:
+#     build: ./requirements/mariadb
+#     container_name: mariadb
+#     env_file: .env
+#     volumes:
+#       - mariadb_data:/var/lib/mysql
+#     networks:
+#       - inception
+#     restart: always
+  
+#   wordpress:
+#     build: ./requirements/wordpress
+#     container_name: wordpress
+#     env_file: .env
+#     depends_on:
+#       - mariadb
+#     volumes:
+#       - wordpress_data:/var/www/html
+#     networks:
+#       - inception
+#     restart: always
+
+#   nginx:
+#     build: ./requirements/nginx
+#     container_name: nginx
+#     env_file: .env
+#     depends_on:
+#       - wordpress
+#     ports:
+#       - "443:443"
+#     volumes:
+#       - wordpress_data:/var/www/html
+#     networks:
+#       - inception
+#     restart: always
+
+# volumes:
+#   mariadb_data:
+#     name: mariadb_data
+#     driver: local
+#     driver_opt:
+#       type: none
+#       o: bind
+#       device: /home/adam/Desktop/Inception/mariadb
+
+#   wordpress_data:
+#     name: wordpress_data
+#     driver: local
+#     driver_opt:
+#       type: none
+#       o: bind
+#       device: /home/adam/Desktop/Inception/wordpress
+
+# networks:
+#   inception:
+#     driver: bridge
